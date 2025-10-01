@@ -1089,23 +1089,27 @@
                     const printData = preparePrintData();
                     
                     if (isMobileDevice()) {
-                        // Для мобильных устройств создаем новое окно
+                        // Для мобильных устройств создаем Blob URL
                         console.log('Создание печатного шаблона для мобильного устройства v2.0');
                         const printHTML = generatePrintHTML(printData);
                         console.log('HTML сгенерирован, длина:', printHTML.length);
-                        const printWindow = window.open('', '_blank', 'noopener,noreferrer');
+                        
+                        // Создаем Blob из HTML
+                        const blob = new Blob([printHTML], { type: 'text/html; charset=utf-8' });
+                        const blobUrl = URL.createObjectURL(blob);
+                        
+                        // Открываем новую вкладку с Blob URL
+                        const printWindow = window.open(blobUrl, '_blank');
                         
                         if (printWindow) {
-                            printWindow.document.open();
-                            printWindow.document.write(printHTML);
-                            printWindow.document.close();
-                            
-                            // Восстанавливаем кнопку через секунду
+                            // Освобождаем URL через несколько секунд после открытия
                             setTimeout(() => {
+                                URL.revokeObjectURL(blobUrl);
                                 printButton.textContent = 'Печать';
                                 printButton.disabled = false;
-                            }, 1000);
+                            }, 3000);
                         } else {
+                            URL.revokeObjectURL(blobUrl);
                             alert('Пожалуйста, разрешите всплывающие окна для печати');
                             printButton.textContent = 'Печать';
                             printButton.disabled = false;
