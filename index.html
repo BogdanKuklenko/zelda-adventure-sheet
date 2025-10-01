@@ -123,6 +123,26 @@
         input[type=checkbox]:checked {
             accent-color: #287c33;
         }
+        .skill-item {
+            cursor: pointer;
+            transition: background-color 0.2s, color 0.3s;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+        .skill-item:hover {
+            background-color: #f3f4f6;
+        }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-3px, 0, 0); }
+            40%, 60% { transform: translate3d(3px, 0, 0); }
+        }
+        .shake-error {
+            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+            color: #e42426; /* Zelda Red */
+            font-weight: bold;
+        }
     </style>
 </head>
 <body class="p-4 sm:p-6 md:p-8">
@@ -196,23 +216,23 @@
                     </div>
                 </div>
 
-                <div class="card p-6">
+                <div id="skills-card" class="card p-6">
                     <h2 class="text-xl font-header text-[#287c33] mb-4 border-b-2 border-[#E0DACE] pb-2">ПРИЁМЫ И ЧАРЫ</h2>
                     <div class="space-y-4">
                         <div>
                             <h3 class="font-semibold mb-2">Боевые приёмы (Очки Воина)</h3>
                             <ul class="list-none space-y-1">
-                                <li class="flex justify-between"><span>Бумеранг</span> <span class="font-mono bg-gray-100 px-2">1</span></li>
-                                <li class="flex justify-between"><span>Лук</span> <span class="font-mono bg-gray-100 px-2">2</span></li>
-                                <li class="flex justify-between"><span>Сверхсила</span> <span class="font-mono bg-gray-100 px-2">3</span></li>
+                                <li class="flex justify-between skill-item" data-skill="warrior" data-cost="1"><span>Бумеранг</span> <span class="font-mono bg-gray-100 px-2">1</span></li>
+                                <li class="flex justify-between skill-item" data-skill="warrior" data-cost="2"><span>Лук</span> <span class="font-mono bg-gray-100 px-2">2</span></li>
+                                <li class="flex justify-between skill-item" data-skill="warrior" data-cost="3"><span>Сверхсила</span> <span class="font-mono bg-gray-100 px-2">3</span></li>
                             </ul>
                         </div>
                         <div>
                             <h3 class="font-semibold mb-2">Магические чары (Очки Магии)</h3>
                             <ul class="list-none space-y-1">
-                                <li class="flex justify-between"><span>Луч духа</span> <span class="font-mono bg-gray-100 px-2">1</span></li>
-                                <li class="flex justify-between"><span>Полёт</span> <span class="font-mono bg-gray-100 px-2">2</span></li>
-                                <li class="flex justify-between"><span>Время</span> <span class="font-mono bg-gray-100 px-2">3</span></li>
+                                <li class="flex justify-between skill-item" data-skill="magic" data-cost="1"><span>Луч духа</span> <span class="font-mono bg-gray-100 px-2">1</span></li>
+                                <li class="flex justify-between skill-item" data-skill="magic" data-cost="2"><span>Полёт</span> <span class="font-mono bg-gray-100 px-2">2</span></li>
+                                <li class="flex justify-between skill-item" data-skill="magic" data-cost="3"><span>Время</span> <span class="font-mono bg-gray-100 px-2">3</span></li>
                             </ul>
                         </div>
                     </div>
@@ -375,6 +395,26 @@
                         updateDisplay();
                         saveState();
                     }
+                }
+            });
+
+            const skillsCard = document.getElementById('skills-card');
+            skillsCard.addEventListener('click', function(e) {
+                const skillItem = e.target.closest('.skill-item');
+                if (!skillItem) return;
+
+                const skillType = skillItem.dataset.skill;
+                const cost = parseInt(skillItem.dataset.cost);
+
+                if (state[skillType] >= cost) {
+                    state[skillType] -= cost;
+                    updateDisplay();
+                    saveState();
+                } else {
+                    skillItem.classList.add('shake-error');
+                    setTimeout(() => {
+                        skillItem.classList.remove('shake-error');
+                    }, 500);
                 }
             });
 
