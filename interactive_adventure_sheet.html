@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Интерактивный Лист Приключения</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Russo+One&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Legend of Zelda Gamebook -->
+    <!-- Application Structure Plan: Структура сохраняет начальный экран для распределения очков. Кнопка "Памятка" и новая кнопка "Сброс" перемещены наверх для удобства и уменьшены в размере. Основной интерфейс — дашборд. Сохранение прогресса в localStorage осталось без изменений. -->
+    <!-- Visualization & Content Choices: 1. Характеристики Линка: Цель - Информировать и Изменять. Представление - Интерактивные счетчики. Метод - Vanilla JS. 2. Предметы и Маршрут: Цель - Организовать. Представление - Интерактивные списки. Метод - Vanilla JS. 3. Сохранение данных: Цель - Обеспечить персистентность. Метод - localStorage. 4. Памятка: Цель - Информировать. Представление - Модальное окно. Метод - Vanilla JS. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FDFBF5; /* Parchment background */
+            color: #4A3F35;
+        }
+        .font-header {
+            font-family: 'Russo One', sans-serif;
+        }
+        .card {
+            background-color: #FFFFFF;
+            border: 2px solid #5D4037; /* Darker brown border */
+            box-shadow: 4px 4px 0px #5D4037;
+            border-radius: 0;
+        }
+        .btn {
+            border-radius: 0;
+            font-family: 'Russo One', sans-serif;
+            text-transform: uppercase;
+            border: 2px solid #4A3F35;
+            box-shadow: 2px 2px 0px #4A3F35;
+            transition: all 0.1s ease-in-out;
+        }
+        .btn:active {
+            transform: translateY(2px) translateX(2px);
+            box-shadow: 0px 0px 0px #4A3F35;
+        }
+        .btn-control {
+            background-color: #E8E5E0;
+            color: #4A3F35;
+        }
+        .btn-control:hover {
+            background-color: #D9D4CC;
+        }
+        .btn-add {
+            background-color: #287c33; /* Zelda Green */
+            color: white;
+        }
+        .btn-add:hover {
+            background-color: #216a2b;
+        }
+        .btn-memo {
+             background-color: #f7b42c; /* Zelda Gold */
+             color: #4A3F35;
+        }
+        .btn-memo:hover {
+            background-color: #f5a91a;
+        }
+        .btn-reset {
+             background-color: #e42426; /* Zelda Red */
+             color: #FFFFFF;
+        }
+        .btn-reset:hover {
+            background-color: #c41a1c;
+        }
+        .btn-delete {
+            background-color: #e42426; /* Zelda Red */
+            color: white;
+            border: 2px solid #4A3F35;
+            box-shadow: 1px 1px 0px #4A3F35;
+        }
+        .btn-delete:hover {
+            background-color: #c41a1c;
+        }
+         .btn-delete:active {
+            transform: translateY(1px) translateX(1px);
+            box-shadow: 0px 0px 0px #4A3F35;
+        }
+        .stat-value {
+            font-size: 2.25rem;
+            line-height: 2.5rem;
+            font-weight: 700;
+            font-family: 'Russo One', sans-serif;
+            color: #287c33;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            background: #f7b42c; /* Zelda Gold */
+            cursor: pointer;
+            border-radius: 0;
+            border: 2px solid #4A3F35;
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 24px;
+            height: 24px;
+            background: #f7b42c; /* Zelda Gold */
+            cursor: pointer;
+            border-radius: 0;
+            border: 2px solid #4A3F35;
+        }
+        .header-banner {
+            background-color: #287c33;
+            padding: 0.5rem 1rem;
+            border: 2px solid #4A3F35;
+            box-shadow: 4px 4px 0px #4A3F35;
+            display: inline-block;
+        }
+        .header-title {
+            color: #e42426;
+            text-shadow: -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000;
+        }
+        input[type=checkbox] {
+            transform: scale(1.5);
+            margin-right: 0.75rem;
+        }
+        input[type=checkbox]:checked {
+            accent-color: #287c33;
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-6 md:p-8">
+    <div class="max-w-6xl mx-auto">
+        <header class="text-center mb-4">
+            <div class="header-banner">
+                <h1 class="text-2xl sm:text-3xl md:text-4xl font-header header-title">ЛЕГЕНДА О ЗЕЛЬДЕ</h1>
+            </div>
+             <p class="text-lg mt-4 font-header text-[#5D4037]">ЛИСТ ПРИКЛЮЧЕНИЙ</p>
+        </header>
+        
+        <div class="text-center mb-10 space-x-4">
+            <button id="memo-button" class="btn btn-memo py-1 px-4 text-sm">Памятка</button>
+            <button id="reset-button" class="btn btn-reset py-1 px-4 text-sm">Сброс</button>
+        </div>
+
+        <main class="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
+            
+            <div id="setup-section" class="lg:col-span-3 card p-6">
+                <h2 class="text-xl font-header text-[#287c33] mb-4 border-b-2 border-[#E0DACE] pb-2">РАСПРЕДЕЛЕНИЕ ОЧКОВ</h2>
+                <p class="mb-4 text-gray-700">Распределите 5 очков между Воинским и Магическим Мастерством. Передвиньте ползунок, чтобы выбрать баланс.</p>
+                <div class="space-y-4">
+                    <div>
+                        <label for="warrior-slider" class="flex justify-between font-medium"><span>Очки Воина:</span> <span id="warrior-setup-value" class="font-bold">3</span></label>
+                        <input id="warrior-slider" type="range" min="0" max="5" value="3" class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+                    </div>
+                    <div>
+                         <label class="flex justify-between font-medium"><span>Очки Магии:</span> <span id="magic-setup-value" class="font-bold">2</span></label>
+                         <div class="w-full h-6 bg-gray-200 border-2 border-gray-300 flex items-center justify-center font-bold" id="magic-display-bar">2</div>
+                    </div>
+                </div>
+                 <button id="confirm-setup" class="mt-6 w-full btn btn-add font-bold py-2 px-4">Начать приключение</button>
+            </div>
+
+            <div id="game-section" class="hidden lg:col-span-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8">
+                <div class="lg:col-span-1 md:col-span-2 lg:row-span-2">
+                    <div class="card p-6 space-y-4">
+                         <h2 class="text-xl font-header text-[#287c33] mb-2 border-b-2 border-[#E0DACE] pb-2">ХАРАКТЕРИСТИКИ</h2>
+                         <div class="text-center">
+                            <h3 class="font-header text-lg">ЖИЗНЬ</h3>
+                            <div class="flex items-center justify-center space-x-4 mt-2">
+                                <button data-stat="life" data-amount="-1" class="btn btn-control rounded-none w-10 h-10 font-bold text-xl">-</button>
+                                <span id="life-value" class="stat-value w-16 text-center">5</span>
+                                <button data-stat="life" data-amount="1" class="btn btn-control rounded-none w-10 h-10 font-bold text-xl">+</button>
+                            </div>
+                        </div>
+                         <div class="text-center">
+                            <h3 class="font-header text-lg">ВОИН</h3>
+                            <div class="flex items-center justify-center space-x-4 mt-2">
+                                <button data-stat="warrior" data-amount="-1" class="btn btn-control rounded-none w-10 h-10 font-bold text-xl">-</button>
+                                <span id="warrior-value" class="stat-value w-16 text-center">0</span>
+                                <button data-stat="warrior" data-amount="1" class="btn btn-control rounded-none w-10 h-10 font-bold text-xl">+</button>
+                            </div>
+                        </div>
+                         <div class="text-center">
+                            <h3 class="font-header text-lg">МАГИЯ</h3>
+                            <div class="flex items-center justify-center space-x-4 mt-2">
+                                <button data-stat="magic" data-amount="-1" class="btn btn-control rounded-none w-10 h-10 font-bold text-xl">-</button>
+                                <span id="magic-value" class="stat-value w-16 text-center">0</span>
+                                <button data-stat="magic" data-amount="1" class="btn btn-control rounded-none w-10 h-10 font-bold text-xl">+</button>
+                            </div>
+                        </div>
+                         <div class="text-center border-t-2 border-[#E0DACE] pt-4">
+                            <h3 class="font-header text-lg">РУПИИ</h3>
+                            <div class="flex items-center justify-center space-x-4 mt-2">
+                                <button data-stat="rupees" data-amount="-1" class="btn btn-control rounded-none w-10 h-10 font-bold text-xl">-</button>
+                                <span id="rupees-value" class="stat-value w-16 text-center">3</span>
+                                <button data-stat="rupees" data-amount="1" class="btn btn-control rounded-none w-10 h-10 font-bold text-xl">+</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card p-6">
+                    <h2 class="text-xl font-header text-[#287c33] mb-4 border-b-2 border-[#E0DACE] pb-2">ПРИЁМЫ И ЧАРЫ</h2>
+                    <div class="space-y-4">
+                        <div>
+                            <h3 class="font-semibold mb-2">Боевые приёмы (Очки Воина)</h3>
+                            <ul class="list-none space-y-1">
+                                <li class="flex justify-between"><span>Бумеранг</span> <span class="font-mono bg-gray-100 px-2">1</span></li>
+                                <li class="flex justify-between"><span>Лук</span> <span class="font-mono bg-gray-100 px-2">2</span></li>
+                                <li class="flex justify-between"><span>Сверхсила</span> <span class="font-mono bg-gray-100 px-2">3</span></li>
+                            </ul>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold mb-2">Магические чары (Очки Магии)</h3>
+                            <ul class="list-none space-y-1">
+                                <li class="flex justify-between"><span>Луч духа</span> <span class="font-mono bg-gray-100 px-2">1</span></li>
+                                <li class="flex justify-between"><span>Полёт</span> <span class="font-mono bg-gray-100 px-2">2</span></li>
+                                <li class="flex justify-between"><span>Время</span> <span class="font-mono bg-gray-100 px-2">3</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card p-6">
+                    <h2 class="text-xl font-header text-[#287c33] mb-4 border-b-2 border-[#E0DACE] pb-2">ПРЕДМЕТЫ</h2>
+                     <p class="text-sm text-gray-600 mb-4">Отмечайте полученные предметы.</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-y-3" id="items-list">
+                        <label class="flex items-center"><input type="checkbox"><span>Сокровище Мудрости</span></label>
+                        <label class="flex items-center"><input type="checkbox"><span>Лампа</span></label>
+                        <label class="flex items-center"><input type="checkbox"><span>Сокровище Мужества</span></label>
+                        <label class="flex items-center"><input type="checkbox"><span>Компас</span></label>
+                        <label class="flex items-center"><input type="checkbox"><span>Сокровище Силы</span></label>
+                        <label class="flex items-center"><input type="checkbox"><span>Кристалл</span></label>
+                        <label class="flex items-center"><input type="checkbox"><span>Волшебный жезл</span></label>
+                        <label class="flex items-center"><input type="checkbox"><span>Бомба</span></label>
+                        <label class="flex items-center"><input type="checkbox"><span>Живая вода</span></label>
+                        <label class="flex items-center"><input type="checkbox"><span>Кольцо</span></label>
+                        <label class="flex items-center"><input type="checkbox"><span>Ключ</span></label>
+                        <label class="flex items-center"><input type="checkbox"><span>Флейта</span></label>
+                    </div>
+                </div>
+            </div>
+
+            <div id="route-section" class="hidden lg:col-span-3 card p-6">
+                <h2 class="text-xl font-header text-[#287c33] mb-4 border-b-2 border-[#E0DACE] pb-2">МАРШРУТ</h2>
+                <p class="text-sm text-gray-600 mb-4">Записывайте номера страниц и ключевые события вашего путешествия.</p>
+                <div class="flex flex-col sm:flex-row gap-4 mb-4">
+                    <input type="text" id="route-page" placeholder="Номер страницы" class="flex-1 p-2 border-2 border-gray-300 bg-gray-50 focus:ring-2 focus:ring-[#f7b42c] focus:border-[#f7b42c]">
+                    <input type="text" id="route-event" placeholder="Ключевое событие" class="flex-grow p-2 border-2 border-gray-300 bg-gray-50 focus:ring-2 focus:ring-[#f7b42c] focus:border-[#f7b42c]">
+                    <button id="add-route-entry" class="sm:w-auto btn btn-add font-bold py-2 px-4">Добавить</button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="bg-gray-100 border-b-2 border-gray-300">
+                            <tr>
+                                <th class="p-3 font-semibold">Страница</th>
+                                <th class="p-3 font-semibold">Событие</th>
+                                <th class="p-3 font-semibold w-16"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="route-table-body">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- Memo Modal -->
+    <div id="memo-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="card p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-4 border-b-2 border-[#E0DACE] pb-2">
+                 <h2 class="text-xl font-header text-[#287c33]">ПАМЯТКА ЧИТАТЕЛЮ</h2>
+                 <button id="close-memo" class="font-header text-2xl text-[#e42426]">&times;</button>
+            </div>
+            <div class="space-y-4 text-gray-700">
+                <div class="space-y-3">
+                    <div>
+                        <h3 class="font-bold">Характеристики Линка</h3>
+                        <p>Очки Жизни равны 5. Во время игры это значение может изменяться – не забывайте записывать новые значения согласно указаниям в тексте.</p>
+                    </div>
+                    <div>
+                        <h3 class="font-bold">Приёмы и чары</h3>
+                        <p>Тут указаны доступные боевые приёмы (очки Воина) и колдовские чары (очки Магии), а также стоимость их использования. Не забывайте вычитать расходуемые очки из соответствующих характеристик.</p>
+                    </div>
+                    <div>
+                        <h3 class="font-bold">Деньги (рупии)</h3>
+                        <p>В самом начале у Линка три рупии. Он может получать и тратить деньги. Записывайте сюда все необходимые изменения.</p>
+                    </div>
+                    <div>
+                        <h3 class="font-bold">Предметы</h3>
+                        <p>Всякий раз получая какой-либо предмет, поставьте значок в окошке рядом с названием этого предмета. Если предмет утрачен или израсходован, сотрите значок. Помните, одновременно можно иметь только один предмет каждого вида.</p>
+                    </div>
+                    <div>
+                        <h3 class="font-bold">Маршрут</h3>
+                        <p>Чтобы не забыть, где уже успели побывать, записывайте сюда номера страниц, начиная с 1.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reset Confirmation Modal -->
+    <div id="reset-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="card p-6 max-w-sm w-full">
+            <h2 class="text-xl font-header text-[#e42426] mb-4">Сбросить прогресс?</h2>
+            <p class="mb-6 text-gray-700">Все ваши данные будут удалены. Это действие нельзя отменить.</p>
+            <div class="flex justify-end space-x-4">
+                <button id="cancel-reset" class="btn btn-control py-2 px-4">Отмена</button>
+                <button id="confirm-reset" class="btn btn-reset py-2 px-4">Да, сбросить</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const storageKey = 'zeldaAdventureSheetState';
+            
+            let state = {
+                life: 5,
+                warrior: 3,
+                magic: 2,
+                rupees: 3,
+            };
+
+            const warriorSlider = document.getElementById('warrior-slider');
+            const warriorSetupValue = document.getElementById('warrior-setup-value');
+            const magicSetupValue = document.getElementById('magic-setup-value');
+            const magicDisplayBar = document.getElementById('magic-display-bar');
+            
+            warriorSlider.addEventListener('input', () => {
+                const warriorPoints = parseInt(warriorSlider.value);
+                const magicPoints = 5 - warriorPoints;
+                warriorSetupValue.textContent = warriorPoints;
+                magicSetupValue.textContent = magicPoints;
+                magicDisplayBar.textContent = magicPoints;
+            });
+
+            const confirmBtn = document.getElementById('confirm-setup');
+            confirmBtn.addEventListener('click', () => {
+                state.warrior = parseInt(warriorSlider.value);
+                state.magic = 5 - state.warrior;
+                state.life = 5;
+                state.rupees = 3;
+                showGame(true);
+            });
+            
+            function showGame(isNewGame) {
+                document.getElementById('setup-section').classList.add('hidden');
+                document.getElementById('game-section').classList.remove('hidden');
+                document.getElementById('route-section').classList.remove('hidden');
+                updateDisplay();
+                if (isNewGame) {
+                   saveState(true); // true to reset items and route
+                }
+            }
+
+            const lifeValue = document.getElementById('life-value');
+            const warriorValue = document.getElementById('warrior-value');
+            const magicValue = document.getElementById('magic-value');
+            const rupeesValue = document.getElementById('rupees-value');
+            
+            function updateDisplay() {
+                lifeValue.textContent = state.life;
+                warriorValue.textContent = state.warrior;
+                magicValue.textContent = state.magic;
+                rupeesValue.textContent = state.rupees;
+            }
+
+            document.getElementById('game-section').addEventListener('click', function(e) {
+                if (e.target.closest('[data-stat]')) {
+                    const button = e.target.closest('[data-stat]');
+                    const stat = button.dataset.stat;
+                    const amount = parseInt(button.dataset.amount);
+                    if (state[stat] + amount >= 0) {
+                        state[stat] += amount;
+                        updateDisplay();
+                        saveState();
+                    }
+                }
+            });
+
+            const addRouteBtn = document.getElementById('add-route-entry');
+            const routePageInput = document.getElementById('route-page');
+            const routeEventInput = document.getElementById('route-event');
+            const routeTableBody = document.getElementById('route-table-body');
+
+            function addRouteRow(page, event) {
+                const newRow = document.createElement('tr');
+                newRow.classList.add('border-b');
+                newRow.innerHTML = `
+                    <td class="p-3">${page}</td>
+                    <td class="p-3">${event}</td>
+                    <td class="p-3 text-center"><button class="btn-delete text-xs px-2 py-1">X</button></td>
+                `;
+                routeTableBody.appendChild(newRow);
+            }
+
+            addRouteBtn.addEventListener('click', function() {
+                const page = routePageInput.value.trim();
+                const event = routeEventInput.value.trim();
+
+                if (page || event) {
+                    addRouteRow(page, event);
+                    routePageInput.value = '';
+                    routeEventInput.value = '';
+                    saveState();
+                }
+            });
+
+            routeTableBody.addEventListener('click', function(e) {
+                if (e.target.classList.contains('btn-delete')) {
+                    e.target.closest('tr').remove();
+                    saveState();
+                }
+            });
+
+            const itemsList = document.getElementById('items-list');
+            itemsList.addEventListener('change', () => saveState());
+
+            function saveState(isReset = false) {
+                 if (isReset) {
+                    const itemCheckboxes = document.querySelectorAll('#items-list input[type="checkbox"]');
+                    itemCheckboxes.forEach(cb => cb.checked = false);
+                    routeTableBody.innerHTML = '';
+                }
+
+                const itemStates = Array.from(document.querySelectorAll('#items-list input[type="checkbox"]'))
+                                      .map(cb => cb.checked);
+                
+                const routeEntries = Array.from(document.querySelectorAll('#route-table-body tr')).map(row => {
+                    return {
+                        page: row.cells[0].textContent,
+                        event: row.cells[1].textContent
+                    };
+                });
+                
+                const gameState = {
+                    stats: state,
+                    items: itemStates,
+                    route: routeEntries,
+                    gameStarted: true
+                };
+                
+                localStorage.setItem(storageKey, JSON.stringify(gameState));
+            }
+
+            function loadState() {
+                const savedData = localStorage.getItem(storageKey);
+                if (savedData) {
+                    const gameState = JSON.parse(savedData);
+                    if(gameState.gameStarted){
+                        state = gameState.stats;
+
+                        const itemCheckboxes = document.querySelectorAll('#items-list input[type="checkbox"]');
+                        gameState.items.forEach((isChecked, index) => {
+                            if (itemCheckboxes[index]) {
+                                itemCheckboxes[index].checked = isChecked;
+                            }
+                        });
+
+                        routeTableBody.innerHTML = '';
+                        gameState.route.forEach(entry => addRouteRow(entry.page, entry.event));
+
+                        showGame(false);
+                    }
+                }
+            }
+            
+            loadState();
+            
+            // Memo Modal Logic
+            const memoButton = document.getElementById('memo-button');
+            const memoModal = document.getElementById('memo-modal');
+            const closeMemoButton = document.getElementById('close-memo');
+
+            memoButton.addEventListener('click', () => {
+                memoModal.classList.remove('hidden');
+            });
+
+            closeMemoButton.addEventListener('click', () => {
+                memoModal.classList.add('hidden');
+            });
+            
+            memoModal.addEventListener('click', (e) => {
+                if (e.target === memoModal) {
+                    memoModal.classList.add('hidden');
+                }
+            });
+
+            // Reset Logic
+            const resetButton = document.getElementById('reset-button');
+            const resetModal = document.getElementById('reset-modal');
+            const cancelResetButton = document.getElementById('cancel-reset');
+            const confirmResetButton = document.getElementById('confirm-reset');
+
+            resetButton.addEventListener('click', () => {
+                resetModal.classList.remove('hidden');
+            });
+
+            cancelResetButton.addEventListener('click', () => {
+                resetModal.classList.add('hidden');
+            });
+
+            resetModal.addEventListener('click', (e) => {
+                if (e.target === resetModal) {
+                    resetModal.classList.add('hidden');
+                }
+            });
+            
+            confirmResetButton.addEventListener('click', () => {
+                localStorage.removeItem(storageKey);
+
+                document.getElementById('setup-section').classList.remove('hidden');
+                document.getElementById('game-section').classList.add('hidden');
+                document.getElementById('route-section').classList.add('hidden');
+                
+                warriorSlider.value = 3;
+                warriorSlider.dispatchEvent(new Event('input'));
+
+                resetModal.classList.add('hidden');
+            });
+
+        });
+    </script>
+</body>
+</html>
+
