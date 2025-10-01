@@ -9,8 +9,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Russo+One&display=swap" rel="stylesheet">
     <!-- Chosen Palette: Legend of Zelda Gamebook -->
-    <!-- Application Structure Plan: Структура сохраняет начальный экран для распределения очков. Кнопка "Памятка" и новая кнопка "Сброс" перемещены наверх для удобства и уменьшены в размере. Основной интерфейс — дашборд. Сохранение прогресса в localStorage осталось без изменений. -->
-    <!-- Visualization & Content Choices: 1. Характеристики Линка: Цель - Информировать и Изменять. Представление - Интерактивные счетчики. Метод - Vanilla JS. 2. Предметы и Маршрут: Цель - Организовать. Представление - Интерактивные списки. Метод - Vanilla JS. 3. Сохранение данных: Цель - Обеспечить персистентность. Метод - localStorage. 4. Памятка: Цель - Информировать. Представление - Модальное окно. Метод - Vanilla JS. -->
+    <!-- Application Structure Plan: Структура сохраняет начальный экран для распределения очков. Кнопки "Памятка", "Сброс" и "Печать" расположены наверху для удобства. Основной интерфейс — дашборд. Добавлена специальная верстка для печати. -->
+    <!-- Visualization & Content Choices: 1. Характеристики Линка: Цель - Информировать и Изменять. Представление - Интерактивные счетчики. Метод - Vanilla JS. 2. Предметы и Маршрут: Цель - Организовать. Представление - Интерактивные списки. Метод - Vanilla JS. 3. Сохранение данных: Цель - Обеспечить персистентность. Метод - localStorage. 4. Печать: Цель - Создать физическую копию. Метод - CSS @media print и JS для подготовки данных. -->
     <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
     <style>
         body {
@@ -59,6 +59,13 @@
         }
         .btn-memo:hover {
             background-color: #f5a91a;
+        }
+        .btn-print {
+             background-color: #4a5568;
+             color: #FFFFFF;
+        }
+        .btn-print:hover {
+            background-color: #2d3748;
         }
         .btn-reset {
              background-color: #e42426; /* Zelda Red */
@@ -143,10 +150,83 @@
             color: #e42426; /* Zelda Red */
             font-weight: bold;
         }
+        
+        #print-area {
+            display: none;
+        }
+
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #print-area, #print-area * {
+                visibility: visible;
+            }
+            #print-area {
+                display: block;
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                font-size: 10pt;
+                color: black;
+            }
+            .print-card {
+                border: 1px solid #666;
+                padding: 0.5rem;
+                margin-bottom: 0.5rem;
+                break-inside: avoid;
+            }
+            h1, h2, h3 {
+                color: black !important;
+                text-shadow: none !important;
+            }
+            .print-grid {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 1rem;
+            }
+            .print-stat-value {
+                font-weight: bold;
+                border-bottom: 1px solid black;
+                display: inline-block;
+                min-width: 50px;
+                text-align: center;
+                font-size: 12pt;
+                padding-bottom: 3px;
+            }
+             .print-item-box {
+                width: 14px;
+                height: 14px;
+                border: 1px solid black;
+                display: inline-block;
+                margin-right: 8px;
+                vertical-align: middle;
+                text-align: center;
+                line-height: 12px;
+                font-size: 10px;
+                font-weight: bold;
+            }
+            .route-grid {
+                display: grid;
+                grid-template-columns: repeat(12, 1fr);
+                gap: 2px;
+            }
+            .route-cell {
+                border: 1px solid #ccc;
+                height: 20px;
+                text-align: center;
+                line-height: 20px;
+                font-size: 9pt;
+            }
+            .route-cell-separator {
+                border: none;
+            }
+        }
     </style>
 </head>
 <body class="p-4 sm:p-6 md:p-8">
-    <div class="max-w-6xl mx-auto">
+    <div id="app-wrapper" class="max-w-6xl mx-auto">
         <header class="text-center mb-4">
             <div class="header-banner">
                 <h1 class="text-2xl sm:text-3xl md:text-4xl font-header header-title">ЛЕГЕНДА О ЗЕЛЬДЕ</h1>
@@ -154,9 +234,10 @@
              <p class="text-lg mt-4 font-header text-[#5D4037]">ЛИСТ ПРИКЛЮЧЕНИЙ</p>
         </header>
         
-        <div class="text-center mb-10 space-x-4">
-            <button id="memo-button" class="btn btn-memo py-1 px-4 text-sm">Памятка</button>
-            <button id="reset-button" class="btn btn-reset py-1 px-4 text-sm">Сброс</button>
+        <div class="text-center mb-10 space-x-2 sm:space-x-4">
+            <button id="memo-button" class="btn btn-memo py-1 px-3 sm:px-4 text-sm">Памятка</button>
+            <button id="print-button" class="btn btn-print py-1 px-3 sm:px-4 text-sm">Печать</button>
+            <button id="reset-button" class="btn btn-reset py-1 px-3 sm:px-4 text-sm">Сброс</button>
         </div>
 
         <main class="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
@@ -283,7 +364,7 @@
         </main>
     </div>
     
-    <!-- Memo Modal -->
+    <!-- Modals -->
     <div id="memo-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
         <div class="card p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center mb-4 border-b-2 border-[#E0DACE] pb-2">
@@ -316,8 +397,6 @@
             </div>
         </div>
     </div>
-
-    <!-- Reset Confirmation Modal -->
     <div id="reset-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
         <div class="card p-6 max-w-sm w-full">
             <h2 class="text-xl font-header text-[#e42426] mb-4">Сбросить прогресс?</h2>
@@ -325,6 +404,62 @@
             <div class="flex justify-end space-x-4">
                 <button id="cancel-reset" class="btn btn-control py-2 px-4">Отмена</button>
                 <button id="confirm-reset" class="btn btn-reset py-2 px-4">Да, сбросить</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Print Area -->
+    <div id="print-area">
+        <div style="display: flex; flex-direction: column; height: 100vh; padding: 1cm;">
+            <div id="print-main-content">
+                <h1 style="text-align: center; font-size: 16pt; font-weight: bold; font-family: 'Russo One', sans-serif;">ЛЕГЕНДА О ЗЕЛЬДЕ: ЛИСТ ПРИКЛЮЧЕНИЙ</h1>
+                <div class="print-grid">
+                    <div class="print-card">
+                        <h2 style="font-size: 12pt; font-weight: bold; border-bottom: 1px solid #666; padding-bottom: 4px; margin-bottom: 8px;">ХАРАКТЕРИСТИКИ</h2>
+                        <div style="display: flex; justify-content: space-around; text-align: center;">
+                            <div><h3 style="font-weight: bold;">ЖИЗНЬ</h3><span id="print-life" class="print-stat-value"></span></div>
+                            <div><h3 style="font-weight: bold;">ВОИН</h3><span id="print-warrior" class="print-stat-value"></span></div>
+                            <div><h3 style="font-weight: bold;">МАГИЯ</h3><span id="print-magic" class="print-stat-value"></span></div>
+                            <div><h3 style="font-weight: bold;">РУПИИ</h3><span id="print-rupees" class="print-stat-value"></span></div>
+                        </div>
+                    </div>
+                    <div class="print-card">
+                         <h2 style="font-size: 12pt; font-weight: bold; border-bottom: 1px solid #666; padding-bottom: 4px; margin-bottom: 8px;">ПРИЁМЫ И ЧАРЫ</h2>
+                         <div style="display: flex; justify-content: space-between;">
+                            <div style="width: 48%;">
+                                <h3 style="font-weight: bold;">Боевые приёмы</h3>
+                                <ul>
+                                    <li>Бумеранг (1)</li>
+                                    <li>Лук (2)</li>
+                                    <li>Сверхсила (3)</li>
+                                </ul>
+                            </div>
+                            <div style="width: 48%;">
+                                <h3 style="font-weight: bold;">Магические чары</h3>
+                                <ul>
+                                    <li>Луч духа (1)</li>
+                                    <li>Полёт (2)</li>
+                                    <li>Время (3)</li>
+                                </ul>
+                            </div>
+                         </div>
+                    </div>
+                     <div class="print-card" style="grid-column: span 2;">
+                        <h2 style="font-size: 12pt; font-weight: bold; border-bottom: 1px solid #666; padding-bottom: 4px; margin-bottom: 8px;">ПРЕДМЕТЫ</h2>
+                        <div id="print-items" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px;"></div>
+                    </div>
+                    <div class="print-card" style="grid-column: span 2;">
+                        <h2 style="font-size: 12pt; font-weight: bold; border-bottom: 1px solid #666; padding-bottom: 4px; margin-bottom: 8px;">МАРШРУТ</h2>
+                        <div class="route-grid" id="print-route-grid">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div style="margin-top: auto;">
+                 <div class="print-card">
+                    <h2 style="font-size: 10pt; font-weight: bold; border-bottom: 1px solid #666; padding-bottom: 2px; margin-bottom: 4px;">ПАМЯТКА ЧИТАТЕЛЮ</h2>
+                    <div id="print-memo-content" style="font-size: 8pt; columns: 2; column-gap: 1rem;"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -507,58 +642,101 @@
             
             loadState();
             
-            // Memo Modal Logic
+            // Modal Logic
             const memoButton = document.getElementById('memo-button');
             const memoModal = document.getElementById('memo-modal');
             const closeMemoButton = document.getElementById('close-memo');
+            memoButton.addEventListener('click', () => memoModal.classList.remove('hidden'));
+            closeMemoButton.addEventListener('click', () => memoModal.classList.add('hidden'));
+            memoModal.addEventListener('click', (e) => { if (e.target === memoModal) memoModal.classList.add('hidden'); });
 
-            memoButton.addEventListener('click', () => {
-                memoModal.classList.remove('hidden');
-            });
-
-            closeMemoButton.addEventListener('click', () => {
-                memoModal.classList.add('hidden');
-            });
-            
-            memoModal.addEventListener('click', (e) => {
-                if (e.target === memoModal) {
-                    memoModal.classList.add('hidden');
-                }
-            });
-
-            // Reset Logic
             const resetButton = document.getElementById('reset-button');
             const resetModal = document.getElementById('reset-modal');
             const cancelResetButton = document.getElementById('cancel-reset');
             const confirmResetButton = document.getElementById('confirm-reset');
-
-            resetButton.addEventListener('click', () => {
-                resetModal.classList.remove('hidden');
-            });
-
-            cancelResetButton.addEventListener('click', () => {
-                resetModal.classList.add('hidden');
-            });
-
-            resetModal.addEventListener('click', (e) => {
-                if (e.target === resetModal) {
-                    resetModal.classList.add('hidden');
-                }
-            });
-            
+            resetButton.addEventListener('click', () => resetModal.classList.remove('hidden'));
+            cancelResetButton.addEventListener('click', () => resetModal.classList.add('hidden'));
+            resetModal.addEventListener('click', (e) => { if (e.target === resetModal) resetModal.classList.add('hidden'); });
             confirmResetButton.addEventListener('click', () => {
                 localStorage.removeItem(storageKey);
-
                 document.getElementById('setup-section').classList.remove('hidden');
                 document.getElementById('game-section').classList.add('hidden');
                 document.getElementById('route-section').classList.add('hidden');
-                
                 warriorSlider.value = 3;
                 warriorSlider.dispatchEvent(new Event('input'));
-
                 resetModal.classList.add('hidden');
             });
 
+            // Print Logic
+            const printButton = document.getElementById('print-button');
+            printButton.addEventListener('click', () => {
+                // Update stats for print
+                document.getElementById('print-life').innerHTML = state.life > 0 ? state.life : '&nbsp;';
+                document.getElementById('print-warrior').innerHTML = state.warrior > 0 ? state.warrior : '&nbsp;';
+                document.getElementById('print-magic').innerHTML = state.magic > 0 ? state.magic : '&nbsp;';
+                document.getElementById('print-rupees').innerHTML = state.rupees > 0 ? state.rupees : '&nbsp;';
+
+                // Update items for print
+                const printItemsContainer = document.getElementById('print-items');
+                printItemsContainer.innerHTML = '';
+                const itemLabels = document.querySelectorAll('#items-list label');
+                itemLabels.forEach(label => {
+                    const isChecked = label.querySelector('input').checked;
+                    const itemName = label.querySelector('span').textContent;
+                    const itemDiv = document.createElement('div');
+                    const box = document.createElement('span');
+                    box.className = 'print-item-box';
+                    box.innerHTML = isChecked ? '✔' : '&nbsp;';
+                    itemDiv.appendChild(box);
+                    itemDiv.appendChild(document.createTextNode(' ' + itemName));
+                    printItemsContainer.appendChild(itemDiv);
+                });
+                
+                // Collect and parse all route page numbers
+                const routeEntries = Array.from(document.querySelectorAll('#route-table-body tr'));
+                const paragraphsWithSeparators = [];
+                routeEntries.forEach((row, index) => {
+                    const pageText = row.cells[0].textContent.trim();
+                    if (pageText) {
+                        const paragraphs = pageText.split(/[-,.\s]+/).filter(p => p.trim() !== '');
+                        paragraphsWithSeparators.push(...paragraphs);
+                        if (index < routeEntries.length - 1 && paragraphs.length > 0) {
+                            paragraphsWithSeparators.push('SEPARATOR');
+                        }
+                    }
+                });
+
+                // Generate route grid and populate it
+                const routeGrid = document.getElementById('print-route-grid');
+                routeGrid.innerHTML = '';
+                for(let i=0; i<84; i++) {
+                    const cell = document.createElement('div');
+                    const entry = paragraphsWithSeparators[i];
+
+                    if (entry === 'SEPARATOR') {
+                        cell.className = 'route-cell-separator';
+                    } else {
+                        cell.className = 'route-cell';
+                        if (entry) {
+                            cell.textContent = entry;
+                        }
+                    }
+                    routeGrid.appendChild(cell);
+                }
+                
+                // Populate memo for print
+                const printMemoContainer = document.getElementById('print-memo-content');
+                const memoSourceContainer = document.querySelector('#memo-modal .space-y-3');
+                let memoHTML = '';
+                memoSourceContainer.querySelectorAll('div').forEach(div => {
+                    const title = div.querySelector('h3').textContent;
+                    const text = div.querySelector('p').textContent;
+                    memoHTML += `<p style="margin-bottom: 2px;"><strong>${title}:</strong> ${text}</p>`;
+                });
+                printMemoContainer.innerHTML = memoHTML;
+
+                window.print();
+            });
         });
     </script>
 </body>
