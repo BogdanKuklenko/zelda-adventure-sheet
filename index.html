@@ -8,10 +8,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Russo+One&display=swap" rel="stylesheet">
-    <!-- Chosen Palette: Legend of Zelda Gamebook -->
-    <!-- Application Structure Plan: Структура сохраняет начальный экран для распределения очков. Кнопки "Памятка", "Сброс" и "Печать" расположены наверху для удобства. Основной интерфейс — дашборд. Добавлена специальная верстка для печати. -->
-    <!-- Visualization & Content Choices: 1. Характеристики Линка: Цель - Информировать и Изменять. Представление - Интерактивные счетчики. Метод - Vanilla JS. 2. Предметы и Маршрут: Цель - Организовать. Представление - Интерактивные списки. Метод - Vanilla JS. 3. Сохранение данных: Цель - Обеспечить персистентность. Метод - localStorage. 4. Печать: Цель - Создать физическую копию. Метод - CSS @media print и JS для подготовки данных. -->
-    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -26,6 +22,11 @@
             border: 2px solid #5D4037; /* Darker brown border */
             box-shadow: 4px 4px 0px #5D4037;
             border-radius: 0;
+            transition: box-shadow 0.3s ease, transform 0.3s ease;
+        }
+        .card:hover {
+            box-shadow: 6px 6px 0px #5D4037;
+            transform: translateY(-2px);
         }
         .btn {
             border-radius: 0;
@@ -93,6 +94,36 @@
             font-weight: 700;
             font-family: 'Russo One', sans-serif;
             color: #287c33;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+        .stat-value.stat-changed {
+            animation: pulse 0.4s ease;
+            color: #f7b42c;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+        
+        input[type="text"] {
+            transition: all 0.3s ease;
+        }
+        input[type="text"]:focus {
+            outline: none;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        input[type="checkbox"] {
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+        input[type="checkbox"]:hover {
+            transform: scale(1.1);
+        }
+        input[type="range"] {
+            cursor: pointer;
         }
         input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
@@ -103,6 +134,13 @@
             cursor: pointer;
             border-radius: 0;
             border: 2px solid #4A3F35;
+            transition: all 0.2s ease;
+        }
+        input[type="range"]::-webkit-slider-thumb:hover {
+            width: 28px;
+            height: 28px;
+            background: #ffbe3d;
+            box-shadow: 0 0 8px rgba(247, 180, 44, 0.6);
         }
         input[type="range"]::-moz-range-thumb {
             width: 24px;
@@ -111,6 +149,13 @@
             cursor: pointer;
             border-radius: 0;
             border: 2px solid #4A3F35;
+            transition: all 0.2s ease;
+        }
+        input[type="range"]::-moz-range-thumb:hover {
+            width: 28px;
+            height: 28px;
+            background: #ffbe3d;
+            box-shadow: 0 0 8px rgba(247, 180, 44, 0.6);
         }
         .header-banner {
             background-color: #287c33;
@@ -118,10 +163,65 @@
             border: 2px solid #4A3F35;
             box-shadow: 4px 4px 0px #4A3F35;
             display: inline-block;
+            animation: slideDown 0.6s ease-out;
         }
         .header-title {
             color: #e42426;
             text-shadow: -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000;
+        }
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Улучшенная таблица маршрута */
+        #route-table-body tr {
+            transition: all 0.3s ease;
+        }
+        #route-table-body tr:hover {
+            background-color: #f3f4f6;
+            transform: translateX(4px);
+        }
+        
+        /* Плавное появление карточек */
+        .card {
+            animation: fadeIn 0.5s ease-out;
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Анимации для модальных окон */
+        @keyframes fadeInBg {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        @keyframes modalSlideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
         }
         input[type=checkbox] {
             transform: scale(1.5);
@@ -132,12 +232,20 @@
         }
         .skill-item {
             cursor: pointer;
-            transition: background-color 0.2s, color 0.3s;
-            padding: 4px 8px;
-            border-radius: 4px;
+            transition: all 0.3s ease;
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid transparent;
         }
         .skill-item:hover {
             background-color: #f3f4f6;
+            border-color: #287c33;
+            transform: translateX(4px);
+            box-shadow: 2px 2px 0px rgba(40, 124, 51, 0.2);
+        }
+        .skill-item:active {
+            transform: translateX(2px);
+            box-shadow: 1px 1px 0px rgba(40, 124, 51, 0.2);
         }
         @keyframes shake {
             10%, 90% { transform: translate3d(-1px, 0, 0); }
@@ -151,31 +259,33 @@
             font-weight: bold;
         }
         
-        #print-area {
+        .printable {
             display: none;
         }
 
         @media print {
-            body * {
-                visibility: hidden;
+            body > *:not(.printable) {
+                display: none;
             }
-            #print-area, #print-area * {
-                visibility: visible;
-            }
-            #print-area {
-                display: block;
+            .printable {
+                display: flex;
+                flex-direction: column;
                 position: absolute;
                 left: 0;
                 top: 0;
                 width: 100%;
+                min-height: 100vh;
                 font-size: 10pt;
                 color: black;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
             }
             .print-card {
                 border: 1px solid #666;
                 padding: 0.5rem;
-                margin-bottom: 0.5rem;
+                margin-bottom: 1rem;
                 break-inside: avoid;
+                page-break-inside: avoid;
             }
             h1, h2, h3 {
                 color: black !important;
@@ -191,9 +301,11 @@
                 border-bottom: 1px solid black;
                 display: inline-block;
                 min-width: 50px;
+                min-height: 20px;
                 text-align: center;
                 font-size: 12pt;
                 padding-bottom: 3px;
+                line-height: 16px;
             }
              .print-item-box {
                 width: 14px;
@@ -211,6 +323,7 @@
                 display: grid;
                 grid-template-columns: repeat(12, 1fr);
                 gap: 2px;
+                width: 100%;
             }
             .route-cell {
                 border: 1px solid #ccc;
@@ -218,9 +331,61 @@
                 text-align: center;
                 line-height: 20px;
                 font-size: 9pt;
+                overflow: hidden;
+                word-break: break-word;
             }
             .route-cell-separator {
                 border: none;
+                background: transparent;
+            }
+            .print-memo-section {
+                margin-top: auto;
+                page-break-inside: avoid;
+            }
+            
+            /* Мобильная печать */
+            @page {
+                size: auto;
+                margin: 10mm;
+            }
+            
+            /* Отключаем анимации и трансформации при печати */
+            *, *::before, *::after {
+                animation-duration: 0s !important;
+                transition-duration: 0s !important;
+                transform: none !important;
+            }
+        }
+        
+        /* Улучшения для мобильных устройств */
+        @media screen and (max-width: 640px) {
+            .stat-value {
+                font-size: 1.75rem;
+                line-height: 2rem;
+            }
+            .btn {
+                font-size: 0.875rem;
+                padding: 0.5rem 0.75rem;
+                min-height: 44px; /* Увеличиваем для лучшего нажатия на мобильных */
+            }
+            .btn-print {
+                min-width: 120px;
+            }
+            input[type="range"]::-webkit-slider-thumb {
+                width: 32px;
+                height: 32px;
+            }
+            input[type="range"]::-moz-range-thumb {
+                width: 32px;
+                height: 32px;
+            }
+            .header-title {
+                font-size: 1.5rem;
+            }
+            /* Убираем сложные эффекты на мобильных для ускорения */
+            .card:hover {
+                box-shadow: 4px 4px 0px #5D4037;
+                transform: none;
             }
         }
     </style>
@@ -364,9 +529,8 @@
         </main>
     </div>
     
-    <!-- Modals -->
-    <div id="memo-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-        <div class="card p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+    <div id="memo-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" style="animation: fadeInBg 0.3s ease;">
+        <div class="card p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto" style="animation: modalSlideUp 0.4s ease;">
             <div class="flex justify-between items-center mb-4 border-b-2 border-[#E0DACE] pb-2">
                  <h2 class="text-xl font-header text-[#287c33]">ПАМЯТКА ЧИТАТЕЛЮ</h2>
                  <button id="close-memo" class="font-header text-2xl text-[#e42426]">&times;</button>
@@ -397,8 +561,8 @@
             </div>
         </div>
     </div>
-    <div id="reset-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-        <div class="card p-6 max-w-sm w-full">
+    <div id="reset-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" style="animation: fadeInBg 0.3s ease;">
+        <div class="card p-6 max-w-sm w-full" style="animation: modalSlideUp 0.4s ease;">
             <h2 class="text-xl font-header text-[#e42426] mb-4">Сбросить прогресс?</h2>
             <p class="mb-6 text-gray-700">Все ваши данные будут удалены. Это действие нельзя отменить.</p>
             <div class="flex justify-end space-x-4">
@@ -408,59 +572,54 @@
         </div>
     </div>
 
-    <!-- Print Area -->
-    <div id="print-area">
-        <div style="display: flex; flex-direction: column; height: 100vh; padding: 1cm;">
-            <div id="print-main-content">
-                <h1 style="text-align: center; font-size: 16pt; font-weight: bold; font-family: 'Russo One', sans-serif;">ЛЕГЕНДА О ЗЕЛЬДЕ: ЛИСТ ПРИКЛЮЧЕНИЙ</h1>
-                <div class="print-grid">
-                    <div class="print-card">
-                        <h2 style="font-size: 12pt; font-weight: bold; border-bottom: 1px solid #666; padding-bottom: 4px; margin-bottom: 8px;">ХАРАКТЕРИСТИКИ</h2>
-                        <div style="display: flex; justify-content: space-around; text-align: center;">
-                            <div><h3 style="font-weight: bold;">ЖИЗНЬ</h3><span id="print-life" class="print-stat-value"></span></div>
-                            <div><h3 style="font-weight: bold;">ВОИН</h3><span id="print-warrior" class="print-stat-value"></span></div>
-                            <div><h3 style="font-weight: bold;">МАГИЯ</h3><span id="print-magic" class="print-stat-value"></span></div>
-                            <div><h3 style="font-weight: bold;">РУПИИ</h3><span id="print-rupees" class="print-stat-value"></span></div>
-                        </div>
-                    </div>
-                    <div class="print-card">
-                         <h2 style="font-size: 12pt; font-weight: bold; border-bottom: 1px solid #666; padding-bottom: 4px; margin-bottom: 8px;">ПРИЁМЫ И ЧАРЫ</h2>
-                         <div style="display: flex; justify-content: space-between;">
-                            <div style="width: 48%;">
-                                <h3 style="font-weight: bold;">Боевые приёмы</h3>
-                                <ul>
-                                    <li>Бумеранг (1)</li>
-                                    <li>Лук (2)</li>
-                                    <li>Сверхсила (3)</li>
-                                </ul>
-                            </div>
-                            <div style="width: 48%;">
-                                <h3 style="font-weight: bold;">Магические чары</h3>
-                                <ul>
-                                    <li>Луч духа (1)</li>
-                                    <li>Полёт (2)</li>
-                                    <li>Время (3)</li>
-                                </ul>
-                            </div>
-                         </div>
-                    </div>
-                     <div class="print-card" style="grid-column: span 2;">
-                        <h2 style="font-size: 12pt; font-weight: bold; border-bottom: 1px solid #666; padding-bottom: 4px; margin-bottom: 8px;">ПРЕДМЕТЫ</h2>
-                        <div id="print-items" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px;"></div>
-                    </div>
-                    <div class="print-card" style="grid-column: span 2;">
-                        <h2 style="font-size: 12pt; font-weight: bold; border-bottom: 1px solid #666; padding-bottom: 4px; margin-bottom: 8px;">МАРШРУТ</h2>
-                        <div class="route-grid" id="print-route-grid">
-                        </div>
-                    </div>
+    <div class="printable p-4">
+        <h1 style="text-align: center; font-size: 16pt; font-weight: bold; font-family: 'Russo One', sans-serif;">ЛЕГЕНДА О ЗЕЛЬДЕ: ЛИСТ ПРИКЛЮЧЕНИЙ</h1>
+        <div class="print-grid">
+            <div class="print-card">
+                <h2 style="font-size: 12pt; font-weight: bold; border-bottom: 1px solid #666; padding-bottom: 4px; margin-bottom: 8px;">ХАРАКТЕРИСТИКИ</h2>
+                <div style="display: flex; justify-content: space-around; text-align: center;">
+                    <div><h3 style="font-weight: bold;">ЖИЗНЬ</h3><span id="print-life" class="print-stat-value"></span></div>
+                    <div><h3 style="font-weight: bold;">ВОИН</h3><span id="print-warrior" class="print-stat-value"></span></div>
+                    <div><h3 style="font-weight: bold;">МАГИЯ</h3><span id="print-magic" class="print-stat-value"></span></div>
+                    <div><h3 style="font-weight: bold;">РУПИИ</h3><span id="print-rupees" class="print-stat-value"></span></div>
                 </div>
             </div>
-            <div style="margin-top: auto;">
-                 <div class="print-card">
-                    <h2 style="font-size: 10pt; font-weight: bold; border-bottom: 1px solid #666; padding-bottom: 2px; margin-bottom: 4px;">ПАМЯТКА ЧИТАТЕЛЮ</h2>
-                    <div id="print-memo-content" style="font-size: 8pt; columns: 2; column-gap: 1rem;"></div>
+            <div class="print-card">
+                 <h2 style="font-size: 12pt; font-weight: bold; border-bottom: 1px solid #666; padding-bottom: 4px; margin-bottom: 8px;">ПРИЁМЫ И ЧАРЫ</h2>
+                 <div style="display: flex; justify-content: space-between;">
+                    <div style="width: 48%;">
+                        <h3 style="font-weight: bold;">Боевые приёмы</h3>
+                        <ul style="margin: 0; padding-left: 20px;">
+                            <li>Бумеранг (1)</li>
+                            <li>Лук (2)</li>
+                            <li>Сверхсила (3)</li>
+                        </ul>
+                    </div>
+                    <div style="width: 48%;">
+                        <h3 style="font-weight: bold;">Магические чары</h3>
+                        <ul style="margin: 0; padding-left: 20px;">
+                            <li>Луч духа (1)</li>
+                            <li>Полёт (2)</li>
+                            <li>Время (3)</li>
+                        </ul>
+                    </div>
+                 </div>
+            </div>
+             <div class="print-card" style="grid-column: span 2;">
+                <h2 style="font-size: 12pt; font-weight: bold; border-bottom: 1px solid #666; padding-bottom: 4px; margin-bottom: 8px;">ПРЕДМЕТЫ</h2>
+                <div id="print-items" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; font-size: 9pt;"></div>
+            </div>
+            <div class="print-card" style="grid-column: span 2;">
+                <h2 style="font-size: 12pt; font-weight: bold; border-bottom: 1px solid #666; padding-bottom: 4px; margin-bottom: 8px;">МАРШРУТ</h2>
+                <div class="route-grid" id="print-route-grid">
                 </div>
             </div>
+        </div>
+        
+        <!-- Памятка перемещена в самый низ -->
+        <div class="print-card print-memo-section">
+            <h2 style="font-size: 10pt; font-weight: bold; border-bottom: 1px solid #666; padding-bottom: 2px; margin-bottom: 4px;">ПАМЯТКА ЧИТАТЕЛЮ</h2>
+            <div id="print-memo-content" style="font-size: 8pt; columns: 2; column-gap: 1rem;"></div>
         </div>
     </div>
 
@@ -513,11 +672,20 @@
             const magicValue = document.getElementById('magic-value');
             const rupeesValue = document.getElementById('rupees-value');
             
-            function updateDisplay() {
+            function updateDisplay(animateStat = null) {
                 lifeValue.textContent = state.life;
                 warriorValue.textContent = state.warrior;
                 magicValue.textContent = state.magic;
                 rupeesValue.textContent = state.rupees;
+                
+                // Добавляем анимацию для изменённой характеристики
+                if (animateStat) {
+                    const element = document.getElementById(`${animateStat}-value`);
+                    element.classList.add('stat-changed');
+                    setTimeout(() => {
+                        element.classList.remove('stat-changed');
+                    }, 400);
+                }
             }
 
             document.getElementById('game-section').addEventListener('click', function(e) {
@@ -527,7 +695,7 @@
                     const amount = parseInt(button.dataset.amount);
                     if (state[stat] + amount >= 0) {
                         state[stat] += amount;
-                        updateDisplay();
+                        updateDisplay(stat); // Передаём имя характеристики для анимации
                         saveState();
                     }
                 }
@@ -543,8 +711,16 @@
 
                 if (state[skillType] >= cost) {
                     state[skillType] -= cost;
-                    updateDisplay();
+                    updateDisplay(skillType); // Передаём тип навыка для анимации
                     saveState();
+                    
+                    // Визуальная обратная связь при успешном использовании
+                    skillItem.style.backgroundColor = '#287c33';
+                    skillItem.style.color = 'white';
+                    setTimeout(() => {
+                        skillItem.style.backgroundColor = '';
+                        skillItem.style.color = '';
+                    }, 200);
                 } else {
                     skillItem.classList.add('shake-error');
                     setTimeout(() => {
@@ -669,32 +845,36 @@
 
             // Print Logic
             const printButton = document.getElementById('print-button');
-            printButton.addEventListener('click', () => {
-                // Update stats for print
-                document.getElementById('print-life').innerHTML = state.life > 0 ? state.life : '&nbsp;';
-                document.getElementById('print-warrior').innerHTML = state.warrior > 0 ? state.warrior : '&nbsp;';
-                document.getElementById('print-magic').innerHTML = state.magic > 0 ? state.magic : '&nbsp;';
-                document.getElementById('print-rupees').innerHTML = state.rupees > 0 ? state.rupees : '&nbsp;';
-
-                // Update items for print
-                const printItemsContainer = document.getElementById('print-items');
-                printItemsContainer.innerHTML = '';
+            
+            // Функция для определения мобильного устройства
+            function isMobileDevice() {
+                return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
+            }
+            
+            // Функция для подготовки данных печати
+            function preparePrintData() {
+                const data = {
+                    life: (state.life > 0) ? state.life : '&nbsp;',
+                    warrior: (state.warrior > 0) ? state.warrior : '&nbsp;',
+                    magic: (state.magic > 0) ? state.magic : '&nbsp;',
+                    rupees: (state.rupees > 0) ? state.rupees : '&nbsp;',
+                    items: [],
+                    route: [],
+                    memo: []
+                };
+                
+                // Prepare items
                 const itemLabels = document.querySelectorAll('#items-list label');
                 itemLabels.forEach(label => {
                     const isChecked = label.querySelector('input').checked;
                     const itemName = label.querySelector('span').textContent;
-                    const itemDiv = document.createElement('div');
-                    const box = document.createElement('span');
-                    box.className = 'print-item-box';
-                    box.innerHTML = isChecked ? '✔' : '&nbsp;';
-                    itemDiv.appendChild(box);
-                    itemDiv.appendChild(document.createTextNode(' ' + itemName));
-                    printItemsContainer.appendChild(itemDiv);
+                    data.items.push({ name: itemName, checked: isChecked });
                 });
                 
-                // Collect and parse all route page numbers
+                // Prepare route
                 const routeEntries = Array.from(document.querySelectorAll('#route-table-body tr'));
                 const paragraphsWithSeparators = [];
+                
                 routeEntries.forEach((row, index) => {
                     const pageText = row.cells[0].textContent.trim();
                     if (pageText) {
@@ -705,40 +885,274 @@
                         }
                     }
                 });
-
-                // Generate route grid and populate it
-                const routeGrid = document.getElementById('print-route-grid');
-                routeGrid.innerHTML = '';
-                for(let i=0; i<84; i++) {
-                    const cell = document.createElement('div');
-                    const entry = paragraphsWithSeparators[i];
-
-                    if (entry === 'SEPARATOR') {
-                        cell.className = 'route-cell-separator';
-                    } else {
-                        cell.className = 'route-cell';
-                        if (entry) {
-                            cell.textContent = entry;
-                        }
-                    }
-                    routeGrid.appendChild(cell);
-                }
+                data.route = paragraphsWithSeparators;
                 
-                // Populate memo for print
-                const printMemoContainer = document.getElementById('print-memo-content');
+                // Prepare memo
                 const memoSourceContainer = document.querySelector('#memo-modal .space-y-3');
-                let memoHTML = '';
                 memoSourceContainer.querySelectorAll('div').forEach(div => {
                     const title = div.querySelector('h3').textContent;
                     const text = div.querySelector('p').textContent;
-                    memoHTML += `<p style="margin-bottom: 2px;"><strong>${title}:</strong> ${text}</p>`;
+                    data.memo.push({ title, text });
                 });
-                printMemoContainer.innerHTML = memoHTML;
-
-                window.print();
+                
+                return data;
+            }
+            
+            // Функция для создания HTML страницы печати
+            function generatePrintHTML(data) {
+                let itemsHTML = data.items.map(item => 
+                    `<div><span class="print-item-box">${item.checked ? '✔' : ''}</span> ${item.name}</div>`
+                ).join('');
+                
+                let routeHTML = '';
+                for(let i = 0; i < 84; i++) {
+                    const entry = data.route[i];
+                    if (entry === 'SEPARATOR') {
+                        routeHTML += '<div class="route-cell-separator"></div>';
+                    } else {
+                        routeHTML += `<div class="route-cell">${entry || ''}</div>`;
+                    }
+                }
+                
+                let memoHTML = data.memo.map(m => 
+                    `<p style="margin-bottom: 2px;"><strong>${m.title}:</strong> ${m.text}</p>`
+                ).join('');
+                
+                return `<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Печать - Лист Приключений v2.0</title>
+    <link href="https://fonts.googleapis.com/css2?family=Russo+One&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            padding: 16px; 
+            font-size: 10pt;
+            color: black;
+            background: white;
+        }
+        h1 { 
+            text-align: center; 
+            font-size: 16pt; 
+            font-weight: bold; 
+            font-family: 'Russo One', sans-serif;
+            margin-bottom: 20px;
+        }
+        h2 { 
+            font-size: 12pt; 
+            font-weight: bold; 
+            border-bottom: 1px solid #666; 
+            padding-bottom: 4px; 
+            margin-bottom: 8px;
+        }
+        h3 { font-weight: bold; }
+        .print-card {
+            border: 1px solid #666;
+            padding: 0.5rem;
+            margin-bottom: 1rem;
+            break-inside: avoid;
+            page-break-inside: avoid;
+        }
+        .print-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+        .print-stat-value {
+            font-weight: bold;
+            border-bottom: 1px solid black;
+            display: inline-block;
+            min-width: 50px;
+            min-height: 20px;
+            text-align: center;
+            font-size: 12pt;
+            padding-bottom: 3px;
+            line-height: 16px;
+        }
+        .print-item-box {
+            width: 14px;
+            height: 14px;
+            border: 1px solid black;
+            display: inline-block;
+            margin-right: 8px;
+            vertical-align: middle;
+            text-align: center;
+            line-height: 12px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+        .route-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 2px;
+            width: 100%;
+        }
+        .route-cell {
+            border: 1px solid #ccc;
+            height: 20px;
+            text-align: center;
+            line-height: 20px;
+            font-size: 9pt;
+            overflow: hidden;
+            word-break: break-word;
+        }
+        .route-cell-separator {
+            border: none;
+            background: transparent;
+        }
+        .no-print { display: none; }
+        @media print {
+            body { padding: 10px; }
+            .no-print { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+    <h1 style="text-align: center; font-size: 16pt; font-weight: bold; font-family: 'Russo One', sans-serif;">ЛЕГЕНДА О ЗЕЛЬДЕ: ЛИСТ ПРИКЛЮЧЕНИЙ</h1>
+    <div class="print-grid">
+        <div class="print-card">
+            <h2 style="font-size: 12pt; font-weight: bold; border-bottom: 1px solid #666; padding-bottom: 4px; margin-bottom: 8px;">ХАРАКТЕРИСТИКИ</h2>
+            <div style="display: flex; justify-content: space-around; text-align: center;">
+                <div><h3 style="font-weight: bold;">ЖИЗНЬ</h3><span class="print-stat-value">${data.life}</span></div>
+                <div><h3 style="font-weight: bold;">ВОИН</h3><span class="print-stat-value">${data.warrior}</span></div>
+                <div><h3 style="font-weight: bold;">МАГИЯ</h3><span class="print-stat-value">${data.magic}</span></div>
+                <div><h3 style="font-weight: bold;">РУПИИ</h3><span class="print-stat-value">${data.rupees}</span></div>
+            </div>
+        </div>
+        <div class="print-card">
+            <h2 style="font-size: 12pt; font-weight: bold; border-bottom: 1px solid #666; padding-bottom: 4px; margin-bottom: 8px;">ПРИЁМЫ И ЧАРЫ</h2>
+            <div style="display: flex; justify-content: space-between;">
+                <div style="width: 48%;">
+                    <h3 style="font-weight: bold;">Боевые приёмы</h3>
+                    <ul style="margin: 0; padding-left: 20px;">
+                        <li>Бумеранг (1)</li>
+                        <li>Лук (2)</li>
+                        <li>Сверхсила (3)</li>
+                    </ul>
+                </div>
+                <div style="width: 48%;">
+                    <h3 style="font-weight: bold;">Магические чары</h3>
+                    <ul style="margin: 0; padding-left: 20px;">
+                        <li>Луч духа (1)</li>
+                        <li>Полёт (2)</li>
+                        <li>Время (3)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="print-card" style="grid-column: span 2;">
+            <h2 style="font-size: 12pt; font-weight: bold; border-bottom: 1px solid #666; padding-bottom: 4px; margin-bottom: 8px;">ПРЕДМЕТЫ</h2>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px;">
+                ${itemsHTML}
+            </div>
+        </div>
+        <div class="print-card" style="grid-column: span 2;">
+            <h2 style="font-size: 12pt; font-weight: bold; border-bottom: 1px solid #666; padding-bottom: 4px; margin-bottom: 8px;">МАРШРУТ</h2>
+            <div class="route-grid">
+                ${routeHTML}
+            </div>
+        </div>
+    </div>
+    
+    <div class="print-card" style="page-break-inside: avoid;">
+        <h2 style="font-size: 10pt; font-weight: bold; border-bottom: 1px solid #666; padding-bottom: 2px; margin-bottom: 4px;">ПАМЯТКА ЧИТАТЕЛЮ</h2>
+        <div style="font-size: 8pt; columns: 2; column-gap: 1rem;">
+            ${memoHTML}
+        </div>
+    </div>
+    <div class="no-print" style="text-align: center; margin-top: 20px;">
+        <button onclick="window.print()" style="padding: 10px 20px; font-size: 14pt; cursor: pointer;">Печать</button>
+        <button onclick="window.close()" style="padding: 10px 20px; font-size: 14pt; cursor: pointer; margin-left: 10px;">Закрыть</button>
+    </div>
+    <script>
+        // Автоматически открываем диалог печати после загрузки для десктопа
+        if (!/Android|webOS|iPhone|iPad|iPod/i.test(navigator.userAgent)) {
+            window.onload = function() {
+                setTimeout(function() { window.print(); }, 500);
+            };
+        }
+    <\/script>
+<\/body>
+<\/html>`;
+            }
+            
+            printButton.addEventListener('click', () => {
+                printButton.textContent = 'Подготовка...';
+                printButton.disabled = true;
+                
+                try {
+                    const printData = preparePrintData();
+                    
+                    if (isMobileDevice()) {
+                        // Для мобильных устройств создаем новое окно
+                        console.log('Создание печатного шаблона для мобильного устройства v2.0');
+                        const printHTML = generatePrintHTML(printData);
+                        console.log('HTML сгенерирован, длина:', printHTML.length);
+                        const printWindow = window.open('', '_blank', 'noopener,noreferrer');
+                        
+                        if (printWindow) {
+                            printWindow.document.open();
+                            printWindow.document.write(printHTML);
+                            printWindow.document.close();
+                            
+                            // Восстанавливаем кнопку через секунду
+                            setTimeout(() => {
+                                printButton.textContent = 'Печать';
+                                printButton.disabled = false;
+                            }, 1000);
+                        } else {
+                            alert('Пожалуйста, разрешите всплывающие окна для печати');
+                            printButton.textContent = 'Печать';
+                            printButton.disabled = false;
+                        }
+                    } else {
+                        // Для десктопа используем старый метод
+                        document.getElementById('print-life').innerHTML = printData.life;
+                        document.getElementById('print-warrior').innerHTML = printData.warrior;
+                        document.getElementById('print-magic').innerHTML = printData.magic;
+                        document.getElementById('print-rupees').innerHTML = printData.rupees;
+                        
+                        const printItemsContainer = document.getElementById('print-items');
+                        printItemsContainer.innerHTML = printData.items.map(item => 
+                            `<div><span class="print-item-box">${item.checked ? '✔' : ''}</span> ${item.name}</div>`
+                        ).join('');
+                        
+                        const routeGrid = document.getElementById('print-route-grid');
+                        let routeHTML = '';
+                        for(let i = 0; i < 84; i++) {
+                            const entry = printData.route[i];
+                            if (entry === 'SEPARATOR') {
+                                routeHTML += '<div class="route-cell-separator"></div>';
+                            } else {
+                                routeHTML += `<div class="route-cell">${entry || ''}</div>`;
+                            }
+                        }
+                        routeGrid.innerHTML = routeHTML;
+                        
+                        const printMemoContainer = document.getElementById('print-memo-content');
+                        printMemoContainer.innerHTML = printData.memo.map(m => 
+                            `<p style="margin-bottom: 2px;"><strong>${m.title}:</strong> ${m.text}</p>`
+                        ).join('');
+                        
+                        setTimeout(() => {
+                            window.print();
+                            printButton.textContent = 'Печать';
+                            printButton.disabled = false;
+                        }, 100);
+                    }
+                } catch (e) {
+                    console.error('Print error:', e);
+                    alert('Ошибка при подготовке печати: ' + e.message);
+                    printButton.textContent = 'Печать';
+                    printButton.disabled = false;
+                }
             });
         });
     </script>
 </body>
 </html>
-
